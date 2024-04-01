@@ -1,10 +1,10 @@
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, ScrollView, Image } from "react-native";
 import { CheckBox, Input, Button, Icon } from "react-native-elements";
 import * as SecureStore from "expo-secure-store";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
 import { baseUrl } from "../shared/baseUrl";
 import logo from "../assets/images/logo.png";
 
@@ -138,6 +138,21 @@ const RegisterTab = () => {
     }
   };
 
+  const processImage = async (imgUri) => {
+    try {
+      const processedImage = await ImageManipulator.manipulateAsync(
+        imgUri,
+        [{ resize: { width: 400 } }],
+        { format: "png", compress: 1 }
+      );
+
+      console.log("New image details:", processedImage);
+      setImageUrl(processedImage.uri);
+    } catch (error) {
+      console.log("Error processing image:", error);
+    }
+  };
+
   const getImageFromCamera = async () => {
     const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
 
@@ -146,9 +161,10 @@ const RegisterTab = () => {
         allowsEditing: true,
         aspect: [1, 1],
       });
+
       if (capturedImage.assets) {
         console.log(capturedImage.assets[0]);
-        setImageUrl(capturedImage.assets[0].uri);
+        processImage(capturedImage.assets[0].uri);
       }
     }
   };
